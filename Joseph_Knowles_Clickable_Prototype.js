@@ -90,10 +90,17 @@ var itemsList = [
     "TresLax"
 ];
 
+var itemWidth = 130;
+
 function createCategoryList() {
     var listText = "<ul>";
     for (var i = 0; i < categoryList.length; i++) {
-        listText += "<li><span class='category' role='button' onclick='onCategoryClick()'> " + categoryList[i] + "</span></li>";
+        listText +=
+            "<li><span class='category' role='button' id='btn_" +
+            i +
+            "' onclick='onCategoryClick()'> " +
+            categoryList[i] +
+            "</span></li>";
         console.log(categoryList[i]);
     }
     return listText + "</ul>";
@@ -103,10 +110,10 @@ function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function getRandomItems(){
+function getRandomItems() {
     var totalItems = itemsList.length;
     var usedItems = [];
-    var numWorkingItems = randomIntFromInterval(15, totalItems);
+    var numWorkingItems = randomIntFromInterval(15, 50);
     for (var i = 0; i < numWorkingItems; i++) {
         var currentItem = itemsList[randomIntFromInterval(0, numWorkingItems)];
         while (usedItems.indexOf(currentItem) !== -1) {
@@ -117,37 +124,47 @@ function getRandomItems(){
     return usedItems;
 }
 
-var ROW_W = 10;
-
-function itemGrid(items) {
+function createItemGrid(items) {
+    // console.log(items);
+    var containerWidth = document.getElementById("items").getBoundingClientRect().width;
+    console.log(containerWidth);
+    var ROW_W = Math.floor(containerWidth / itemWidth);
+    console.log(ROW_W);
     var container = document.createElement("div");
+    container.style.width = containerWidth;
     container.id = "items-container";
     container.className = "container";
     var numRows = Math.floor(items.length / ROW_W);
-    if ((items.length % ROW_W !== 0)) {
+
+    if (items.length % ROW_W !== 0) {
         numRows++;
     }
-
+    var processed = 0;
+    var finished = false;
     for (i = 0; i < numRows; i++) {
         var row = document.createElement("div");
         row.className = "row";
         row.id = "row" + i;
+        // row.style.width = "100%";
 
         for (k = 0; k < ROW_W; k++) {
+            if (processed >= items.length) break;
             var item = document.createElement("div");
             item.className = "item-display";
-            var itemText = items[(i * ROW_W) + k]
+            var itemText = items[i * ROW_W + k];
             item.innerText = itemText;
+            item.onclick = onItemClick;
             row.appendChild(item);
-        };
+            processed++;
+        }
 
         container.appendChild(row);
-    };
+    }
 
     return container;
-};
+}
 
-function onCategoryClick(){
+function onCategoryClick() {
     var text = $(event.target).text();
     document.getElementById("category-title").innerText = text;
     var box = document.getElementById("items");
@@ -155,14 +172,16 @@ function onCategoryClick(){
     while (box.firstChild) {
         box.removeChild(box.firstChild);
     }
-    box.appendChild(itemGrid(itemsToDisplay));
+    box.appendChild(createItemGrid(itemsToDisplay));
 }
 
-function onItemClick(){
-    alert("Clicked item!");
-}
+function onItemClick() {
+    var detailView = document.getElementById("item-detail");
 
+    detailView.style.display = "inline-block";
+}
 
 $(document).ready(function () {
     document.getElementById("category-list").innerHTML = createCategoryList();
+    document.getElementById("btn_0").click();
 });
